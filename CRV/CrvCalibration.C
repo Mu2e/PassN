@@ -16,7 +16,7 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
     }
 
     TF1 funcCalib("SPEpeak", "gaus");
-    TSpectrum spectrum(3*2);
+    TSpectrum spectrum(6);
 
     std::ofstream outputFile;
     outputFile.open(outputFileName);
@@ -86,10 +86,6 @@ bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
 {
     if(hist->GetEntries()<100) return false; //not enough data
 
-    int n=hist->GetNbinsX();
-    double overflow=hist->GetBinContent(0)+hist->GetBinContent(n+1);
-    if(overflow/((double)hist->GetEntries())>0.1) return false; //too much underflow/overflow. something may be wrong.
-
     int nPeaks = spectrum.Search(hist,4.0,"nodraw",0.01);
     if(nPeaks==0) return false;
 
@@ -101,10 +97,11 @@ bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
     std::sort(peaks.begin(),peaks.end(), [](const std::pair<double,double> &a, const std::pair<double,double> &b) {return a.first<b.first;});
 
     int peakToUse=0;
-    if(nPeaks>1)   //if more than one peak is found, the first peak could be due to baseline fluctuations
+    if(nPeaks>1 && peaks[0].first>0)   //if more than one peak is found, the first peak could be due to baseline fluctuations
     {
-      if(fabs(peaks[1].first/peaks[0].first-2.0)>0.1) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the 1PE peak
-                                                                   //assume that the 2nd peak is the 1PE peak
+      if(fabs(peaks[1].first/peaks[0].first-2.0)>0.1) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
+                                                                   //assume that the 2nd peak is the SPE peak
+                                                                   //we have never seen that the 3rd peak was the SPE peak - no need to test it
     }
     SPEpeak = peaks[peakToUse].first;
     return true;
