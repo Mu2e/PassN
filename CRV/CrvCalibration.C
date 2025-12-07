@@ -1,4 +1,13 @@
+const double fitRangeStart=0.8;
+const double fitRangeEnd=1.2;
+const int    minHistEntries=100;
+const int    spectrumNPeaks=6;
+const double spectrumPeakSigma=4.0;
+const double spectrumPeakThreshold=0.01;
+const double peakRatioTolerance=0.1;
+
 bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak);
+
 void CrvCalibration(const std::string &inputFileName, const std::string &outputFileName)
 {
     TFile *inputFile = TFile::Open(inputFileName.c_str(),"update");
@@ -16,7 +25,7 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
     }
 
     TF1 funcCalib("SPEpeak", "gaus");
-    TSpectrum spectrum(6);
+    TSpectrum spectrum(spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
 
     std::ofstream outputFile;
     outputFile.open(outputFileName);
@@ -42,8 +51,8 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
           continue;
         }
 
-        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
-        if(hist->FindBin(peakCalib*0.8)==hist->FindBin(peakCalib*1.2)) //fit range start/end are in the same bin
+        funcCalib.SetRange(peakCalib*fitRangeStart,peakCalib*fitRangeEnd);
+        if(hist->FindBin(peakCalib*fitRangeStart)==hist->FindBin(peakCalib*fitRangeEnd)) //fit range start/end are in the same bin
         {
           calibValue[i]=-1;
           continue;
@@ -84,9 +93,9 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
 
 bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
 {
-    if(hist->GetEntries()<100) return false; //not enough data
+    if(hist->GetEntries()<minHistEntries) return false; //not enough data
 
-    int nPeaks = spectrum.Search(hist,4.0,"nodraw",0.01);
+    int nPeaks = spectrum.Search(hist,spectrumPeakSigma,"nodraw",spectrumPeakThreshold);
     if(nPeaks==0) return false;
 
     //peaks are not returned sorted
@@ -99,9 +108,9 @@ bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
     int peakToUse=0;
     if(nPeaks>1 && peaks[0].first>0)   //if more than one peak is found, the first peak could be due to baseline fluctuations
     {
-      if(fabs(peaks[1].first/peaks[0].first-2.0)>0.1) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
-                                                                   //assume that the 2nd peak is the SPE peak
-                                                                   //we have never seen that the 3rd peak was the SPE peak - no need to test it
+      if(fabs(peaks[1].first/peaks[0].first-2.0)>peakRatioTolerance) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
+                                                                                  //assume that the 2nd peak is the SPE peak
+                                                                                  //we have never seen that the 3rd peak was the SPE peak - no need to test it
     }
     SPEpeak = peaks[peakToUse].first;
     return true;
