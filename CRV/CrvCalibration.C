@@ -5,11 +5,13 @@ const double minPeakPulseHeight=10.0;
 const double minPeakPulseArea=250.0;
 const int    spectrumNPeaks=100;
 const double spectrumPeakSigma=4.0;
-const double spectrumPeakThreshold=0.001;
+//const double spectrumPeakThreshold=0.001;
+const double spectrumPeakThreshold=0.01;
 const double peakRatioTolerance=0.3;
 
-template<size_t N>
-bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
+//template<size_t N>
+//bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
 
 void CrvCalibration(const std::string &inputFileName, const std::string &outputFileName)
 {
@@ -27,7 +29,8 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
       pedestals[channel]=pedestal;
     }
 
-    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
+//    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
+    TF1 function("calibPeak","gaus");
     TSpectrum spectrum(spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
 
     std::ofstream outputFile;
@@ -46,9 +49,11 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
       {
         if(i==1) hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseArea_%zu",channel));
         else hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseHeight_%zu",channel));
+        hist->GetListOfFunctions()->Delete();
 
         double SPEpeak=-1;
-        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea)))
+//        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea)))
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea)))
         {
           calibValue[i]=-1;
           continue;
@@ -85,6 +90,33 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
     inputFile->Close();
 }
 
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak)
+{
+    if(hist->GetEntries()<minHistEntries) return false; //not enough data
+
+    size_t nPeaks = spectrum.Search(hist,spectrumPeakSigma,"nodraw",spectrumPeakThreshold);
+    if(nPeaks==0) return false;
+
+    //peaks are returned sorted by Y
+    double *peaksX = spectrum.GetPositionX();
+    double x=peaksX[0];
+    if(x<minPeak)
+    {
+      if(nPeaks==1) return false;
+      x=peaksX[1];
+      if(x<minPeak) return false;
+    }
+
+    if(hist->FindBin(x*fitRangeStart)==hist->FindBin(x*fitRangeEnd)) return false; //fit range start/end are in the same bin
+    function.SetRange(x*fitRangeStart,x*fitRangeEnd);
+    function.SetParameter(1,x);
+    hist->Fit(&function, "QR");
+    SPEpeak = function.GetParameter(1);
+
+    return true;
+}
+
+/*
 template<size_t N>
 bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak)
 {
@@ -122,3 +154,4 @@ bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, 
 
     return true;
 }
+*/
