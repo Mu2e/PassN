@@ -15,8 +15,6 @@ void Plot(TFile *file, TVirtualPad *c, int pad, const std::string &pdfFileName, 
 
 void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string &calibFileName, const std::string &pdfFileName)
 {
-  std::string pdfFileName="timeDifferences.pdf";
-
   std::map<std::pair<int,int>,float> measuredTimeDiffs;
   std::map<int,float> timeOffsets;
   timeOffsets[(1-1)*4]=0;      //FEB1 is used as reference
