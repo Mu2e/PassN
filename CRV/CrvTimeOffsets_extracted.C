@@ -37,6 +37,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   {
     TCanvas *c = new TCanvas(Form("FEB %i",feb+1),Form("FEB %i",feb+1),800,800);
     TText *t = new TText(.1,.8,Form("FEB %i",(feb!=1?feb+1:29)));
+    gROOT->Add(c);
+    gROOT->Add(t);
 
     c->Divide(1,2);
     c->cd(1);
@@ -59,6 +61,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   {
     TCanvas *c = new TCanvas(Form("Module %i",crvmodule+1),Form("Module %i",crvmodule+1),800,800);
     TText *t = new TText(.1,.8,Form("Module %i (FEBs on same side)",crvmodule+1));
+    gROOT->Add(c);
+    gROOT->Add(t);
 
     c->Divide(1,2);
     c->cd(1);
@@ -88,6 +92,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
     if(crvmodule==7) continue; //last DSmodule
     TCanvas *c = new TCanvas(Form("Module %i / Module %i",crvmodule+1,crvmodule+2),Form("Module %i / Module %i",crvmodule+1,crvmodule+2),800,800);
     TText *t = new TText(.1,.8,Form("Module %i / Module %i",crvmodule+1,crvmodule+2));
+    gROOT->Add(c);
+    gROOT->Add(t);
 
     c->Divide(1,2);
     c->cd(1);
@@ -113,6 +119,9 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
     TCanvas *c = new TCanvas("Modules opposite sides","Modules opposite sides",800,800);
     TText *t1 = new TText(.1,.85,"Module 1 (FEBs on opposite sides)");
     TText *t2 = new TText(.1,.35,"Module 5 (FEBs on opposite sides)");
+    gROOT->Add(c);
+    gROOT->Add(t1);
+    gROOT->Add(t2);
 
     c->Divide(1,4);
     c->cd(1);
