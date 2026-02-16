@@ -25,6 +25,11 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   c0.Print(Form("%s[", pdfFileName.c_str()), "pdf");
 
   TFile *file = new TFile(rootFileName.c_str());
+  if(file->IsZombie())
+  {
+    std::cerr<<"Couldn't open "<<rootFileName<<std::endl;
+    return;
+  }
   file->cd("CrvTimingStudies");
 
   //compare all FPGAs of an FEB
@@ -106,8 +111,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   //compare FEBs of opposite readout sides
   {
     TCanvas *c = new TCanvas("Modules opposite sides","Modules opposite sides",800,800);
-    TText *t1 = new TText(.1,.85,"Module 1 (FEBs on opposide sides)");
-    TText *t2 = new TText(.1,.35,"Module 5 (FEBs on opposide sides)");
+    TText *t1 = new TText(.1,.85,"Module 1 (FEBs on opposite sides)");
+    TText *t2 = new TText(.1,.35,"Module 5 (FEBs on opposite sides)");
 
     c->Divide(1,4);
     c->cd(1);
@@ -196,7 +201,7 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   TTree *treeCalib = (TTree*)file->FindObjectAny("crvCalib");
   if(treeChannelMap==NULL || treeCalib==NULL)
   {
-    std::cout<<"Couldn't find channel map or calibration constants!"<<std::endl;
+    std::cerr<<"Couldn't find channel map or calibration constants!"<<std::endl;
     return;
   }
 
@@ -228,7 +233,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
     treeChannelMap->GetEntry(i);
     int globalfeb = (roc-1)*24 + (feb-1);
     int globalfpga = globalfeb*4 + febChannel/16;
-    timeOffsetChannelMap[channel]=timeOffsets.at(globalfpga);
+    if(timeOffsets.find(globalfpga)==timeOffsets.end()) std::cerr<<"Couldn't find a time offset for roc "<<roc<<"  feb "<<feb<<"  febChannel "<<febChannel<<std::endl;
+    else timeOffsetChannelMap[channel]=timeOffsets.at(globalfpga);
   }
 
   calibFile<<"TABLE CRVTime"<<std::endl;

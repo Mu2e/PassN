@@ -6,15 +6,27 @@ const double minPeakPulseArea=250.0;
 const int    spectrumNPeaks=100;
 const double spectrumPeakSigma=4.0;
 const double spectrumPeakThreshold=0.01;
-const double maxFitDifference=100.0;
+const double maxFitDifferencePulseArea=100.0;
+const double maxFitDifferencePulseHeight=4.0;
 
-bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference);
 
 void CrvCalibration(const std::string &rootFileName, const std::string &calibFileName)
 {
     TFile *inputFile = TFile::Open(rootFileName.c_str(),"update");
+    if(inputFile->IsZombie())
+    {
+      std::cerr<<"Couldn't open "<<rootFileName<<std::endl;
+      return;
+    }
     inputFile->cd("CrvCalibration");
     TTree *treePedestals = (TTree*)gDirectory->FindObjectAny("crvPedestals");
+    if(!treePedestals)
+    {
+      std::cerr<<"Couldn't find pedestal tree!"<<std::endl;
+      return;
+    }
+
     size_t channel;
     double pedestal;
     treePedestals->SetBranchAddress("channel", &channel);
@@ -40,19 +52,16 @@ void CrvCalibration(const std::string &rootFileName, const std::string &calibFil
       pedestal=iter->second;
 
       TH1F *hist;
-      double calibValue[2];
+      double calibValue[2]={-1,-1};
       for(int i=0; i<2; ++i) //loop over histograms with pulse areas and pulse heights
       {
         if(i==1) hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseArea_%zu",channel));
         else hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseHeight_%zu",channel));
+        if(!hist) continue;
         hist->GetListOfFunctions()->Delete();
 
         double SPEpeak=-1;
-        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea)))
-        {
-          calibValue[i]=-1;
-          continue;
-        }
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea), (i==0?maxFitDifferencePulseHeight:maxFitDifferencePulseArea))) continue;
         calibValue[i]=SPEpeak;
       }
 
@@ -64,6 +73,14 @@ void CrvCalibration(const std::string &rootFileName, const std::string &calibFil
 
     //time offsets
     TTree *treeTimeOffsets = (TTree*)gDirectory->FindObjectAny("crvTimeOffsets");
+    if(!treeTimeOffsets)
+    {
+      std::cerr<<"Couldn't find time offset tree!"<<std::endl;
+      outputFile.close();
+      inputFile->Close();
+      return;
+    }
+
     double offset;
     treeTimeOffsets->SetBranchAddress("channel", &channel);
     treeTimeOffsets->SetBranchAddress("timeOffset", &offset);
@@ -85,7 +102,7 @@ void CrvCalibration(const std::string &rootFileName, const std::string &calibFil
     inputFile->Close();
 }
 
-bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak)
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference)
 {
     if(hist->GetEntries()<minHistEntries) return false; //not enough data
 
