@@ -1,18 +1,32 @@
 const double fitRangeStart=0.8;
 const double fitRangeEnd=1.2;
 const int    minHistEntries=100;
-const int    spectrumNPeaks=6;
+const double minPeakPulseHeight=10.0;
+const double minPeakPulseArea=250.0;
+const int    spectrumNPeaks=100;
 const double spectrumPeakSigma=4.0;
 const double spectrumPeakThreshold=0.01;
-const double peakRatioTolerance=0.2;
+const double maxFitDifferencePulseArea=100.0;
+const double maxFitDifferencePulseHeight=4.0;
 
-bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak);
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference);
 
-void CrvCalibration(const std::string &inputFileName, const std::string &outputFileName)
+void CrvCalibration(const std::string &rootFileName, const std::string &calibFileName)
 {
-    TFile *inputFile = TFile::Open(inputFileName.c_str(),"update");
+    TFile *inputFile = TFile::Open(rootFileName.c_str(),"update");
+    if(inputFile->IsZombie())
+    {
+      std::cerr<<"Couldn't open "<<rootFileName<<std::endl;
+      return;
+    }
     inputFile->cd("CrvCalibration");
     TTree *treePedestals = (TTree*)gDirectory->FindObjectAny("crvPedestals");
+    if(!treePedestals)
+    {
+      std::cerr<<"Couldn't find pedestal tree!"<<std::endl;
+      return;
+    }
+
     size_t channel;
     double pedestal;
     treePedestals->SetBranchAddress("channel", &channel);
@@ -24,12 +38,12 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
       pedestals[channel]=pedestal;
     }
 
-    TF1 funcCalib("SPEpeak", "gaus");
-    TSpectrum spectrum(spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
+    TF1 function("calibPeak","gaus");
+    TSpectrum spectrum(spectrumNPeaks);
 
     std::ofstream outputFile;
-    outputFile.open(outputFileName);
-    outputFile<<"TABLE CRVSiPM "<<std::endl;
+    outputFile.open(calibFileName);
+    outputFile<<"TABLE CRVSiPM"<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
     for(auto iter=pedestals.begin(); iter!=pedestals.end(); ++iter)
@@ -38,28 +52,17 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
       pedestal=iter->second;
 
       TH1F *hist;
-      double calibValue[2];
-      for(int i=0; i<2; ++i) //loop over hisograms with pulse areas and pulse heights
+      double calibValue[2]={-1,-1};
+      for(int i=0; i<2; ++i) //loop over histograms with pulse areas and pulse heights
       {
         if(i==1) hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseArea_%zu",channel));
         else hist=(TH1F*)gDirectory->FindObjectAny(Form("crvCalibrationHistPulseHeight_%zu",channel));
+        if(!hist) continue;
+        hist->GetListOfFunctions()->Delete();
 
-        double peakCalib=0;
-        if(!FindSPEpeak(hist, spectrum, peakCalib))
-        {
-          calibValue[i]=-1;
-          continue;
-        }
-
-        funcCalib.SetRange(peakCalib*fitRangeStart,peakCalib*fitRangeEnd);
-        if(hist->FindBin(peakCalib*fitRangeStart)==hist->FindBin(peakCalib*fitRangeEnd)) //fit range start/end are in the same bin
-        {
-          calibValue[i]=-1;
-          continue;
-        }
-        funcCalib.SetParameter(1,peakCalib);
-        hist->Fit(&funcCalib, "QR");
-        calibValue[i]=funcCalib.GetParameter(1);
+        double SPEpeak=-1;
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?minPeakPulseHeight:minPeakPulseArea), (i==0?maxFitDifferencePulseHeight:maxFitDifferencePulseArea))) continue;
+        calibValue[i]=SPEpeak;
       }
 
       outputFile<<channel<<","<<pedestal<<","<<calibValue[0]<<","<<calibValue[1]<<std::endl;
@@ -70,6 +73,14 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
 
     //time offsets
     TTree *treeTimeOffsets = (TTree*)gDirectory->FindObjectAny("crvTimeOffsets");
+    if(!treeTimeOffsets)
+    {
+      std::cerr<<"Couldn't find time offset tree!"<<std::endl;
+      outputFile.close();
+      inputFile->Close();
+      return;
+    }
+
     double offset;
     treeTimeOffsets->SetBranchAddress("channel", &channel);
     treeTimeOffsets->SetBranchAddress("timeOffset", &offset);
@@ -91,27 +102,36 @@ void CrvCalibration(const std::string &inputFileName, const std::string &outputF
     inputFile->Close();
 }
 
-bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
+bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference)
 {
     if(hist->GetEntries()<minHistEntries) return false; //not enough data
 
     int nPeaks = spectrum.Search(hist,spectrumPeakSigma,"nodraw",spectrumPeakThreshold);
-    if(nPeaks==0) return false;
+    if(nPeaks<=0) return false;
 
-    //peaks are not returned sorted
+    //peaks are returned sorted by Y
+    //from our long-time experience:
+    //-SPE peak is either the highest peak or second highest peak
+    //-if the SPE peak is the second highest, then the highest peak comes from the baseline
+    //-the peak from the baseline is always below the minPeak threshold, while the SPE peak is not
+    //-the minPeak threshold may have to be adjusted for non-standard bias voltages
     double *peaksX = spectrum.GetPositionX();
-    double *peaksY = spectrum.GetPositionY();
-    std::vector<std::pair<double,double> > peaks;
-    for(int iPeak=0; iPeak<nPeaks; ++iPeak) peaks.emplace_back(peaksX[iPeak],peaksY[iPeak]);
-    std::sort(peaks.begin(),peaks.end(), [](const std::pair<double,double> &a, const std::pair<double,double> &b) {return a.first<b.first;});
-
-    int peakToUse=0;
-    if(nPeaks>1 && peaks[0].first>0)   //if more than one peak is found, the first peak could be due to baseline fluctuations
+    double x=peaksX[0];
+    if(x<minPeak)
     {
-      if(fabs(peaks[1].first/peaks[0].first-2.0)>peakRatioTolerance) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
-                                                                                  //assume that the 2nd peak is the SPE peak
-                                                                                  //we have never seen that the 3rd peak was the SPE peak - no need to test it
+      if(nPeaks==1) return false;
+      x=peaksX[1];
+      if(x<minPeak) return false;
     }
-    SPEpeak = peaks[peakToUse].first;
+
+    if(hist->FindBin(x*fitRangeStart)==hist->FindBin(x*fitRangeEnd)) return false; //fit range start/end are in the same bin
+    function.SetRange(x*fitRangeStart,x*fitRangeEnd);
+    function.SetParameter(1,x);
+    hist->Fit(&function, "QR");
+    SPEpeak = function.GetParameter(1);
+
+    if(fabs(SPEpeak-x)>maxFitDifference) return false;
+    if(SPEpeak<minPeak) return false;
     return true;
 }
+
