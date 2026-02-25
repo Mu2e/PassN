@@ -81,7 +81,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
@@ -95,8 +95,8 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
-          coincidenceLayers : 3
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
           minClusterPEs : 0
           initialClusterMaxDistance : 250
         },
@@ -109,8 +109,8 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
-          coincidenceLayers : 3
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
           minClusterPEs : 0
           initialClusterMaxDistance : 250
         }
