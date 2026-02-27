@@ -30,7 +30,6 @@ physics :
     {
       module_type   : CrvDigisFromArtdaqFragmentsFEBII
       diagLevel     : 0
-      useSubsystem0 : false
     }
     CrvRecoPulses: @local::CrvRecoPulses
     CrvCoincidenceClusterFinder: @local::CrvCoincidenceClusterFinder
@@ -81,7 +80,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
@@ -95,8 +94,8 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
-          coincidenceLayers : 3
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
           minClusterPEs : 0
           initialClusterMaxDistance : 250
         },
@@ -109,8 +108,8 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
-          maxSlopeDifference : 4
-          coincidenceLayers : 3
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
           minClusterPEs : 0
           initialClusterMaxDistance : 250
         }
@@ -121,7 +120,7 @@ services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.t
 services.ProditionsService.crvStatus.useDb: true
 services.ProditionsService.crvCalib.useDb: true
 #current status and calibration until we can use the database
-services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260214.txt","Offline/CRVConditions/data/calib_extracted_20260214.txt"]
+services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260221.txt","Offline/CRVConditions/data/calib_extracted_20260221.txt"]
 services.DbService.verbose : 0
 services.TimeTracker.printSummary: true
 services.scheduler.wantSummary: true

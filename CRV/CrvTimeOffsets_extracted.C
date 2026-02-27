@@ -18,8 +18,8 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
   std::map<std::pair<int,int>,float> measuredTimeDiffs;
   std::map<int,float> timeOffsets;
   timeOffsets[(1-1)*4]=0;      //FEB1 is used as reference
-  timeOffsets[(17-1)*4]=-112;  //FEB17 has 72ft longer cable (for testing purpose)
-  timeOffsets[(25-1)*4]=-7.8;  //FEB25 has 5ft longer cable
+  timeOffsets[(17-1)*4]=112;  //FEB17 has 72ft longer cable (for testing purpose)
+  timeOffsets[(25-1)*4]=7.8;  //FEB25 has 5ft longer cable
 
   TCanvas c0;
   c0.Print(Form("%s[", pdfFileName.c_str()), "pdf");
@@ -172,14 +172,14 @@ void CrvTimeOffsets_extracted(const std::string &rootFileName, const std::string
       //The time offset needs to be positive to counter act it. That's why a negative sign is used below.
       if(measuredTimeDiff->first.first==timeOffset.first)
       {
-        timeOffsets[measuredTimeDiff->first.second]=timeOffset.second-measuredTimeDiff->second;
+        timeOffsets[measuredTimeDiff->first.second]=timeOffset.second+measuredTimeDiff->second;
         measuredTimeDiff=measuredTimeDiffs.erase(measuredTimeDiff);
 	erased=true;
 	break;
       }
       if(measuredTimeDiff->first.second==timeOffset.first)
       {
-        timeOffsets[measuredTimeDiff->first.first]=timeOffset.second+measuredTimeDiff->second;
+        timeOffsets[measuredTimeDiff->first.first]=timeOffset.second-measuredTimeDiff->second;
         measuredTimeDiff=measuredTimeDiffs.erase(measuredTimeDiff);
 	erased=true;
 	break;
