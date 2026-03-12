@@ -6,6 +6,7 @@
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "EventNtuple/fcl/prolog.fcl"
 
 process_name : CrvPass1
 
@@ -33,14 +34,16 @@ physics :
     }
     CrvRecoPulses: @local::CrvRecoPulses
     CrvCoincidenceClusterFinder: @local::CrvCoincidenceClusterFinder
+    @table::EventNtuple.producers
   }
   analyzers :
   {
     CrvDQMcollector: @local::CrvDQMcollector
+    @table::EventNtuple.analyzers
   }
 
-  t1 : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
-  e1 : [ CrvDQMcollector, outfileReco ]
+  t1 : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder, @sequence::EventNtuple.PathNoMC ]
+  e1 : [ CrvDQMcollector, outfileReco, @sequence::EventNtuple.EndPathNoMC ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]
@@ -106,7 +109,24 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
         }
       ]
 
-services.TFileService.fileName : "crvRecoExtracted_DQM.root"
+#include "Production/JobConfig/common/epilog.fcl"
+physics.analyzers.EventNtuple.FillMCInfo : false
+physics.analyzers.EventNtuple.FillCRVDigis : true
+physics.analyzers.EventNtuple.FillCRVPulses : false
+physics.analyzers.EventNtuple.branches : [ ] # no track branches
+physics.analyzers.EventNtuple.FillCaloClusters : false # no calorimeter
+physics.analyzers.EventNtuple.FillCaloHits : false # no calorimeter
+physics.analyzers.EventNtuple.FillCaloClustersMC : false # no calorimeter
+physics.analyzers.EventNtuple.FillCaloSimInfos : false # no calorimeter
+physics.analyzers.EventNtuple.RecoCountTag : ""
+physics.analyzers.EventNtuple.PBTTag : ""
+physics.analyzers.EventNtuple.hasCRV : false  #false prevents skipping events without CRV content in the ntuple
+physics.analyzers.EventNtuple.FillTriggerInfo : false
+physics.analyzers.EventNtuple.CrvDigisTag : "CrvDigi"
+physics.analyzers.EventNtuple.CrvCoincidencesTag: "CrvCoincidenceClusterFinder"
+physics.analyzers.EventNtuple.CrvRecoPulsesTag: "CrvRecoPulses"
+
+services.TFileService.fileName : "crvRecoExtracted.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.ProditionsService.crvStatus.useDb: true
 services.ProditionsService.crvCalib.useDb: true
