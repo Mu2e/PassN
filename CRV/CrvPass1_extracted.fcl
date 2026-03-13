@@ -54,8 +54,7 @@ outputs:
     module_type   :   RootOutput
     fileName      :   "crvRecoExtracted.art"
     outputCommands : [ "keep *_*_*_*" ,
-                       "drop artdaq::*_*_*_*" ,
-                       "drop mu2e::CrvDigis_*_NZS_*" ]
+                       "drop artdaq::*_*_*_*" ]
   }
 }
 
