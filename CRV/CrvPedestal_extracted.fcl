@@ -26,7 +26,6 @@ physics: {
     {
       module_type   : CrvDigisFromArtdaqFragmentsFEBII
       diagLevel     : 0
-      produceZS     : false
     }
   }
   analyzers:
@@ -41,10 +40,6 @@ physics: {
 }
 
 physics.analyzers.CrvPedestalFinder.tmpDBfileName  : "pedestalsExtracted.txt"
-physics.analyzers.CrvPedestalFinder.firstSampleOnly : true
-physics.analyzers.CrvPedestalFinder.histBins : 401
-physics.analyzers.CrvPedestalFinder.histMin : 1799.5
-physics.analyzers.CrvPedestalFinder.histMax : 2200.5
 services.TFileService.fileName : "pedestalsExtracted.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.ProditionsService.crvStatus.useDb: true
