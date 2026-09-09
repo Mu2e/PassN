@@ -1,0 +1,58 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "EventNtuple/fcl/prolog.fcl"
+
+process_name : CaloEventNtuple
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+   maxEvents   : -1
+}
+
+services : {
+    @table::Services.Core
+}
+
+physics : {
+
+  producers : {
+    @table::EventNtuple.producers
+  }
+
+  analyzers : {
+    @table::EventNtuple.analyzers
+  }
+
+  RecoPath : [ ]
+  EndPath : [ EventNtuple ]
+
+  trigger_paths : [ RecoPath ]
+  end_paths : [ EndPath ]
+
+}
+
+#EventNtuple with calo branches (no MC)
+physics.analyzers.EventNtuple.calo.fill : true
+physics.analyzers.EventNtuple.calo.fillDigis : true
+physics.analyzers.EventNtuple.calo.fillRecoDigis : true
+physics.analyzers.EventNtuple.calo.fillHits : true
+physics.analyzers.EventNtuple.calo.fillClusters : true
+physics.analyzers.EventNtuple.calo.digisTag : "CaloDigis"
+physics.analyzers.EventNtuple.calo.recoDigisTag : "CaloRecoDigiMaker"
+physics.analyzers.EventNtuple.calo.hitsTag : "CaloHitMaker"
+physics.analyzers.EventNtuple.calo.clustersTag : "CaloClusterMaker"
+
+#disable non-calo branches
+physics.analyzers.EventNtuple.trk.fill : false
+physics.analyzers.EventNtuple.crv.fill : false
+physics.analyzers.EventNtuple.mc.fill : false
+physics.analyzers.EventNtuple.helices.fill : false
+physics.analyzers.EventNtuple.timeclusters.fill : false
+physics.analyzers.EventNtuple.lineseeds.fill : false
+physics.analyzers.EventNtuple.lumistream.fill : false
+physics.analyzers.EventNtuple.subruns.genEventCount.include : false
+physics.analyzers.EventNtuple.subruns.cosmicLivetime.include : false
+physics.analyzers.EventNtuple.PBTTag : ""
+physics.analyzers.EventNtuple.FillTriggerInfo : false

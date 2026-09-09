@@ -1,0 +1,61 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/DAQ/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+#include "EventNtuple/fcl/prolog.fcl"
+
+process_name : CaloPass1
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+   maxEvents   : -1
+}
+
+services : {
+  @table::Services.Core
+  @table::Services.Reco
+
+  DbService : {
+    purpose : CALO_COMMISSIONING
+    version : v0_0
+    dbName : "mu2e_conditions_dev"
+    verbose : 1
+  }
+
+}
+
+physics : {
+
+  producers : {
+    @table::DAQ.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+  }
+
+  RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker ]
+  EndPath : [ outfile ]
+
+  trigger_paths : [ RecoPath ]
+  end_paths : [ EndPath ]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "caloReco.art"
+    outputCommands : [ "keep *_*_*_*" ,
+                       "drop artdaq::*_*_*_*" ]
+  }
+}
+
+#Real data
+physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+
+#No beam
+physics.producers.CaloRecoDigiMaker.UseProtonBunchTime : false
