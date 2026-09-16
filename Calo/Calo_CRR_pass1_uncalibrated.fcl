@@ -1,0 +1,53 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CaloPass1uncalibrated
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+   maxEvents   : -1
+}
+
+services : {
+  @table::Services.Core
+  @table::Services.Reco
+}
+
+physics : {
+
+  producers : {
+    @table::DAQ.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+  }
+
+  RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker ]
+  EndPath : [ outfile ]
+
+  trigger_paths : [ RecoPath ]
+  end_paths : [ EndPath ]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "caloRecoUncalibrated.art"
+    outputCommands : [ "keep *_*_*_*" ,
+                       "drop artdaq::*_*_*_*" ]
+  }
+}
+
+#Real data
+physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+
+#No beam
+physics.producers.CaloRecoDigiMaker.UseProtonBunchTime : false
+
+#No calibration
+services.ProditionsService.calCalib.useDb : false
+
