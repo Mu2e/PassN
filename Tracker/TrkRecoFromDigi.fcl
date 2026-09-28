@@ -1,0 +1,13 @@
+#include "Production/JobConfig/reco/Extracted.fcl"
+
+physics.RecoPath: [
+  makeSH,
+  SimpleTimeCluster,
+  CosmicShowerFilter,
+  LineFinder,
+  KKLine,
+  KLFilter,
+  SelectReco
+   ]
+
+#include "PassN/Tracker/TrkReco_epilog.fcl"
