@@ -9,9 +9,8 @@ physics.producers.makeSD: {
           missingDTCHeaders : false
           debugBits: []
           debugMode: 0
-          keyOnMnid: false
-          allowOfflineFallbackWhenPanelMapMissing: false
-          forceOfflineAddressing: false
+          addressing: "byLink"
+          onMissingRow: "skip"
       }
 
 services.RandomNumberGenerator   : { defaultEngineKind: "MixMaxRng" }
