@@ -1,0 +1,69 @@
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "PassN/Tracker/TrkRecoFromFragments.fcl"
+
+physics.producers : {
+    @table::physics.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    CaloDigis : @local::DAQ.producers.CaloDigis
+    CrvDigi :
+    {
+      module_type   : CrvDigisFromArtdaqFragmentsFEBII
+      diagLevel     : 0
+      useROC4asROC2 : true
+    }
+    CrvRecoPulses: @local::CrvRecoPulses
+    CrvCoincidenceClusterFinder: @local::CrvCoincidenceClusterFinder
+  }
+physics.analyzers : {
+    CrvDQMcollector: @local::CrvDQMcollector
+  }
+physics.CaloRecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker ]
+physics.CRVRecoPath : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
+physics.RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker, @sequence::physics.RecoPath ]
+physics.CRVEndPath : [ CrvDQMcollector ]
+physics.trigger_paths  : [RecoPath, CaloRecoPath, CRVRecoPath]
+physics.end_paths : [CRVEndPath, EndPath]
+
+outputs.KinematicLineOutput.SelectEvents : []
+outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
+      @sequence::Reconstruction.GeneralProducts,
+      @sequence::Reconstruction.HighRecoProducts,
+      @sequence::Reconstruction.MidRecoProducts,
+      "keep *_DummyLumiInfo_*_*",
+      "keep *_TriggerResults_*_*",
+      "keep mu2e::CrvRecoPulses_*_*_*",
+      "keep mu2e::CrvDigis_*_*_*",
+      "keep mu2e::CrvDAQerrors_*_*_*",
+      "keep *_eventHeaderFromCFOFragment_*_*",
+      "keep mu2e::CrvCoincidenceClusters_*_*_*",
+      "keep mu2e::CrvStatuss_*_*_*",
+      "drop artdaq::*_*_*_*" ,
+      "drop mu2e::CrvDigis_*_NZS_*"
+    ]
+
+### CALO CONFIG ###
+#Real data
+physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+
+#No beam
+physics.producers.CaloRecoDigiMaker.UseProtonBunchTime : false
+
+#Use database
+services.ProditionsService.calCalib.useDb : true
+
+### CRV CONFIG ###
+#include "Offline/CRVReco/fcl/epilog_extracted.fcl"
+physics.producers.CrvCoincidenceClusterFinder.ignoreSecondaryPulses : true  //ignore secondary pulses in a waveform
+services.ProditionsService.crvStatus.useDb : true
+services.ProditionsService.crvCalib.useDb  : true
+
+# temporary calibrations
+#include "PassN/Tracker/trackercalibrations.fcl"
+services.DbService.purpose : "CRV_COMMISSIONING"
+services.DbService.version: v1_0
+services.DbService.textFile : [
+  "Offline/TrackerConditions/data/TrkPanelMap.txt",
+  "PassN/Tracker/trackercalibrations.txt",
+  "Offline/CaloConditions/data/EnergyCalib_example.txt",
+  "Offline/CaloConditions/data/TimeCalib_example.txt" ]
