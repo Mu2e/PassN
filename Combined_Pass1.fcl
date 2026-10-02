@@ -58,10 +58,12 @@ physics.producers.CrvCoincidenceClusterFinder.ignoreSecondaryPulses : true  //ig
 services.ProditionsService.crvStatus.useDb : true
 services.ProditionsService.crvCalib.useDb  : true
 
+# temporary calibrations
+#include "PassN/Tracker/trackercalibrations.fcl"
 services.DbService.purpose : "CRV_COMMISSIONING"
 services.DbService.version: v1_0
 services.DbService.textFile : [
   "Offline/TrackerConditions/data/TrkPanelMap.txt",
-  "Offline/TrackerConditions/data/example.txt",
+  "PassN/Tracker/trackercalibrations.txt",
   "Offline/CaloConditions/data/EnergyCalib_example.txt",
   "Offline/CaloConditions/data/TimeCalib_example.txt" ]
