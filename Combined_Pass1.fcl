@@ -18,10 +18,13 @@ physics.producers : {
       module_type: MSDHitsFromDTCEvents
       debugLevel: 0
     }
+    # EventHeader (EWT, mode, flags) from the CFO fragment. The EventWindowMarker and
+    # ProtonBunchTime used by reco and EventNtuple come from EWMProducer, so don't make
+    # a second (placeholder) copy here
     ProcessCFOData : {
       module_type : EventHeaderFromCFOFragment
       cfoTag      : "fragmentAggregator:CFO"
-      createEWM   : true
+      createEWM   : false
       diagLevel   : 0
     }
   }
@@ -33,9 +36,8 @@ physics.CRVRecoPath : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
 physics.RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker, @sequence::physics.RecoPath ]
 physics.CRVEndPath : [ CrvDQMcollector ]
 physics.MSDRecoPath : [ ProcessCFOData, MSDHitMaker ]
-physics.MSDEndPath : [  ]
 physics.trigger_paths  : [RecoPath, CaloRecoPath, CRVRecoPath, MSDRecoPath]
-physics.end_paths : [CRVEndPath, EndPath, MSDEndPath]
+physics.end_paths : [CRVEndPath, EndPath]
 
 outputs.KinematicLineOutput.SelectEvents : []
 outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
@@ -80,4 +82,6 @@ services.DbService.textFile : [
   "PassN/Tracker/trackercalibrations.txt",
   "Offline/CaloConditions/data/EnergyCalib_example.txt",
   "Offline/CaloConditions/data/TimeCalib_example.txt" ]
+# Commissioning: the temporary text-file calibrations (e.g. trackercalibrations.txt) cover a
+# single run, so fall back to the nearest earlier IOV for other runs, as in the CRV/Calo pass1
 services.DbService.nearestMatch : true
