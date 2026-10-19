@@ -6,8 +6,10 @@ physics.analyzers.EventNtuple.FitType : "KinematicLine"
 physics.analyzers.EventNtuple.trk.fillTrkDtDt : false
 physics.analyzers.EventNtuple.trk.fillHitCalibs : false
 physics.analyzers.EventNtuple.trk.mc.fill : false
+# Only the extracted line fit: from_mcs-mockdata.fcl also stores the online tracks and helices, which are not made on this path
+physics.analyzers.EventNtuple.trk.fits : [ @local::Ext ]
 physics.analyzers.EventNtuple.trk.fits[0].options.fillMC : false
-physics.analyzers.EventNtuple.trk.fits[0].input : "MergeKKLine"
+physics.analyzers.EventNtuple.helices.fill : false
 #physics.producers.MergeKKLine.KalSeedCollections: [ "RegrowKL" ]
 physics.analyzers.EventNtuple.mc.fill : false
 
