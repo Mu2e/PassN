@@ -23,3 +23,7 @@ physics.analyzers.EventNtuple.crv.recoPulsesTag: "CrvRecoPulses"
 physics.analyzers.EventNtuple.calo.fill : true
 physics.analyzers.EventNtuple.calo.fillDigis : false
 physics.analyzers.EventNtuple.calo.mc.fill : false
+
+# MSD info
+physics.analyzers.EventNtuple.msd.fill : true
+physics.analyzers.EventNtuple.msd.hitsTag : "MSDHitMaker"

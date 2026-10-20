@@ -14,6 +14,19 @@ physics.producers : {
     }
     CrvRecoPulses: @local::CrvRecoPulses
     CrvCoincidenceClusterFinder: @local::CrvCoincidenceClusterFinder
+    MSDHitMaker : {
+      module_type: MSDHitsFromDTCEvents
+      debugLevel: 0
+    }
+    # EventHeader (EWT, mode, flags) from the CFO fragment. The EventWindowMarker and
+    # ProtonBunchTime used by reco and EventNtuple come from EWMProducer, so don't make
+    # a second (placeholder) copy here
+    ProcessCFOData : {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag      : "fragmentAggregator:CFO"
+      createEWM   : false
+      diagLevel   : 0
+    }
   }
 physics.analyzers : {
     CrvDQMcollector: @local::CrvDQMcollector
@@ -22,7 +35,8 @@ physics.CaloRecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoCl
 physics.CRVRecoPath : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
 physics.RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker, @sequence::physics.RecoPath ]
 physics.CRVEndPath : [ CrvDQMcollector ]
-physics.trigger_paths  : [RecoPath, CaloRecoPath, CRVRecoPath]
+physics.MSDRecoPath : [ ProcessCFOData, MSDHitMaker ]
+physics.trigger_paths  : [RecoPath, CaloRecoPath, CRVRecoPath, MSDRecoPath]
 physics.end_paths : [CRVEndPath, EndPath]
 
 outputs.KinematicLineOutput.SelectEvents : []
@@ -35,11 +49,12 @@ outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
       "keep mu2e::CrvRecoPulses_*_*_*",
       "keep mu2e::CrvDigis_*_*_*",
       "keep mu2e::CrvDAQerrors_*_*_*",
-      "keep *_eventHeaderFromCFOFragment_*_*",
+      "keep *_ProcessCFOData_*_*",
       "keep mu2e::CrvCoincidenceClusters_*_*_*",
       "keep mu2e::CrvStatuss_*_*_*",
       "drop artdaq::*_*_*_*" ,
-      "drop mu2e::CrvDigis_*_NZS_*"
+      "drop mu2e::CrvDigis_*_NZS_*",
+      "keep *_MSDHitMaker_*_*"
     ]
 
 ### CALO CONFIG ###
@@ -67,3 +82,6 @@ services.DbService.textFile : [
   "PassN/Tracker/trackercalibrations.txt",
   "Offline/CaloConditions/data/EnergyCalib_example.txt",
   "Offline/CaloConditions/data/TimeCalib_example.txt" ]
+# Commissioning: the temporary text-file calibrations (e.g. trackercalibrations.txt) cover a
+# single run, so fall back to the nearest earlier IOV for other runs, as in the CRV/Calo pass1
+services.DbService.nearestMatch : true
