@@ -13,6 +13,9 @@ physics.RecoPath: [
   compressRecoMCs
    ]
 
+# Tracker-only RecoPath: do not schedule the KLPath that Extracted.fcl built from its full RecoPath
+physics.trigger_paths : [ RecoPath ]
+
 physics.EndPath: [
   KinematicLineOutput
 ]
