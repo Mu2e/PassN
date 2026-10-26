@@ -5,7 +5,8 @@
 #include "mu2e-trig-config/core/trigProducers.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog.fcl"
+#include "Offline/CRVDQM/fcl/prolog.fcl"
 
 process_name : CrvPass1
 
@@ -26,6 +27,14 @@ physics :
 {
   producers :
   {
+    EWMProducer :
+    {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag      : "daq:CFO"
+      createEWM   : true
+      isSim       : false
+      diagLevel   : 0
+    }
     CrvDigi :
     {
       module_type   : CrvDigisFromArtdaqFragmentsFEBII
@@ -37,11 +46,31 @@ physics :
   }
   analyzers :
   {
-    CrvDQMcollector: @local::CrvDQMcollector
+    crvDigiDQM :
+    {
+      module_type : DqmCrvDigi
+      digiTag     : "CrvDigi"
+      statusTag   : "CrvDigi"
+      dqm         : @local::CRVDQM.Digi
+    }
+    crvStatusDQM :
+    {
+      module_type : DqmCrvStatus
+      statusTag   : "CrvDigi"
+      daqErrorTag : "CrvDigi"
+      dqm         : @local::CRVDQM.Status
+    }
+    crvRecoDQM :
+    {
+      module_type : DqmCrvReco
+      clusterTag  : "CrvCoincidenceClusterFinder"
+      pulseTag    : "CrvRecoPulses"
+      dqm         : @local::CRVDQM.Reco
+    }
   }
 
-  t1 : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
-  e1 : [ CrvDQMcollector, outfileReco ]
+  t1 : [ EWMProducer, CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
+  e1 : [ crvDigiDQM, crvStatusDQM, crvRecoDQM, outfileReco ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]
