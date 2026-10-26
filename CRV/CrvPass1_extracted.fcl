@@ -48,24 +48,27 @@ physics :
   {
     crvDigiDQM :
     {
-      module_type : DqmCrvDigi
-      digiTag     : "CrvDigi"
-      statusTag   : "CrvDigi"
-      dqm         : @local::CRVDQM.Digi
+      module_type   : DqmCrvDigi
+      configuration : "extracted"
+      digiTag       : "CrvDigi"
+      statusTag     : "CrvDigi"
+      dqm           : @local::CRVDQM.Digi
     }
     crvStatusDQM :
     {
-      module_type : DqmCrvStatus
-      statusTag   : "CrvDigi"
-      daqErrorTag : "CrvDigi"
-      dqm         : @local::CRVDQM.Status
+      module_type   : DqmCrvStatus
+      configuration : "extracted"
+      statusTag     : "CrvDigi"
+      daqErrorTag   : "CrvDigi"
+      dqm           : @local::CRVDQM.Status
     }
     crvRecoDQM :
     {
-      module_type : DqmCrvReco
-      clusterTag  : "CrvCoincidenceClusterFinder"
-      pulseTag    : "CrvRecoPulses"
-      dqm         : @local::CRVDQM.Reco
+      module_type   : DqmCrvReco
+      configuration : "extracted"
+      clusterTag    : "CrvCoincidenceClusterFinder"
+      pulseTag      : "CrvRecoPulses"
+      dqm           : @local::CRVDQM.Reco
     }
   }
 
