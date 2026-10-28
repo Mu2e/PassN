@@ -1,0 +1,120 @@
+#pass1 for data from Calo, calibrated (database or text files)
+#contact: P. Girotti
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "EventNtuple/fcl/prolog.fcl"
+
+process_name : CaloPass1
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+   maxEvents   : -1
+}
+
+services : {
+  @table::Services.Core
+  @table::Services.Reco
+
+  DbService : {
+    purpose : CALO_COMMISSIONING
+    version : v0_0
+    dbName : "mu2e_conditions_dev"
+    verbose : 1
+    #nearestMatch : true
+    textFile : [ "Offline/CaloConditions/data/CalEnergyCalib_125472.csv",
+                 "Offline/CaloConditions/data/CalTimeCalib_125472.csv" ]
+  }
+
+}
+
+physics : {
+
+  filters : {
+    LaserFilter:{
+      module_type : TriggerResultsFilter
+      ProcessName : EvB
+      ProcessTag : true
+      TriggerNames : [ calo_laser ]
+    }
+    CsIFilter:{
+      module_type : TriggerResultsFilter
+      ProcessName : EvB
+      ProcessTag : true
+      TriggerNames : [ calo_csi ]
+    }
+    CAPHRIFilter:{
+      module_type : TriggerResultsFilter
+      ProcessName : EvB
+      ProcessTag : true
+      TriggerNames : [ calo_caphri ]
+    }
+  }
+
+  producers : {
+    @table::DAQ.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+  }
+
+  analyzers : {
+    @table::EventNtuple.analyzers
+  }
+
+  RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker ]
+  EndPath : [ EventNtuple ]
+
+  trigger_paths : [ RecoPath ]
+  end_paths : [ EndPath ]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "caloReco.art"
+    outputCommands : [ "keep *_*_*_*" ,
+                       "drop artdaq::*_*_*_*" ]
+  }
+}
+
+#Real data
+physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+
+#No beam
+physics.producers.CaloRecoDigiMaker.UseProtonBunchTime : false
+
+#Use database
+services.ProditionsService.calCalib.useDb : true
+
+services.TFileService.fileName : "caloNtuple.root"
+
+#EventNtuple with calo branches (no MC)
+physics.analyzers.EventNtuple.calo.fill : true
+physics.analyzers.EventNtuple.calo.fillDigis : true
+physics.analyzers.EventNtuple.calo.fillRecoDigis : true
+physics.analyzers.EventNtuple.calo.fillHits : true
+physics.analyzers.EventNtuple.calo.fillClusters : true
+physics.analyzers.EventNtuple.calo.digisTag : "CaloDigis"
+physics.analyzers.EventNtuple.calo.recoDigisTag : "CaloRecoDigiMaker"
+physics.analyzers.EventNtuple.calo.hitsTag : "CaloHitMaker"
+physics.analyzers.EventNtuple.calo.clustersTag : "CaloClusterMaker"
+
+#enable/disable non-calo branches
+physics.analyzers.EventNtuple.trk.fill : false
+physics.analyzers.EventNtuple.crv.fill : false
+physics.analyzers.EventNtuple.mc.fill : false
+physics.analyzers.EventNtuple.helices.fill : false
+physics.analyzers.EventNtuple.timeclusters.fill : false
+physics.analyzers.EventNtuple.lineseeds.fill : false
+physics.analyzers.EventNtuple.lumistream.fill : false
+physics.analyzers.EventNtuple.subruns.genEventCount.include : false
+physics.analyzers.EventNtuple.subruns.cosmicLivetime.include : false
+physics.analyzers.EventNtuple.PBTTag : ""
+physics.analyzers.EventNtuple.FillTriggerInfo : false
+physics.analyzers.EventNtuple.RecoCountTag : ""
+
