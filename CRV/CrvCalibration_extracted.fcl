@@ -3,7 +3,7 @@
 #
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog.fcl"
 
 process_name : calibrateWideband
 
@@ -38,9 +38,18 @@ physics: {
   end_paths :     [ EndPath ]
 }
 
-physics.producers.CrvRecoPulses.pedestalUndershootThreshold : 10000.0 //prevents it from taking the 1st ADC sample
-physics.producers.CrvRecoPulses.minADCdifference            : 5       //minimum ADC difference above pedestal to be considered for reconstruction
-physics.analyzers.CrvCalibration.tmpDBfileName              : "calibrationExtracted.txt"
+physics.producers.CrvRecoPulses.minPedestalDifference          : -3.0     //prevents smeared-out calibration plots for some channels
+physics.producers.CrvRecoPulses.maxPedestalDifference          :  3.0     //prevents smeared-out calibration plots for some channels
+physics.producers.CrvRecoPulses.minAdjustedPedestalDifference  : -10000.0
+physics.producers.CrvRecoPulses.maxAdjustedPedestalDifference  :  10000.0
+physics.producers.CrvRecoPulses.maxPulseLength                 : 12       //only use single hit pulses for dark count calibration
+physics.producers.CrvRecoPulses.pedestalAdjustment             :  true    //precision pedestal adjustment for dark count calibration
+physics.producers.CrvRecoPulses.pedestalUndershootThreshold    :  10000.0 //forces it to use the adjusted precision pedestal instead of the simple undershoot adjustment
+physics.producers.CrvRecoPulses.minADCdifference               :  5.0     //minimum ADC difference above pedestal to be considered for reconstruction
+physics.producers.CrvRecoPulses.defaultBeta                    : 10.0
+physics.producers.CrvRecoPulses.ignoreChannels                 :  false
+physics.analyzers.CrvCalibration.tmpDBfileName                 : "calibrationExtracted.txt"
+
 services.TFileService.fileName     : "calibrationExtracted.root"
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.ProditionsService.crvStatus.useDb : false
