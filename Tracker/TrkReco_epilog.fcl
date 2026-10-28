@@ -77,3 +77,10 @@ physics.filters.KLFilter.KalSeedCuts[0].minNStrawHits : 5
 physics.filters.KLFilter.KalSeedCuts[0].minFitCons: -9e9
 
 physics.producers.KKLine.KKFitSettings.SaveHitCalibInfo : true
+
+# Deweight constraint from calorimeter for now and widen acceptance
+physics.producers.KKLine.KKFitSettings.CaloPositionResolution : 100.
+physics.producers.KKLine.KKFitSettings.CaloTimeResolution : 25.
+physics.producers.KKLine.KKFitSettings.MaxCaloClusterDOCA: 250
+physics.producers.KKLine.KKFitSettings.MaxCaloClusterDt: 250
+physics.producers.LineFinder.CaloClusterCollection : CaloClusterMaker
