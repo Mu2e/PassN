@@ -1,0 +1,17 @@
+services.ProditionsService.strawResponse.truncateLongitudinal : true
+services.ProditionsService.strawResponse.wireLengthBuffer : 0.0
+services.ProditionsService.strawResponse.strawLengthFactor : 1.0
+services.ProditionsService.strawResponse.errorFactor : 2.0
+
+physics.producers.makeSH.MinimumEnergy : 0.0006
+
+physics.producers.SimpleTimeCluster.HitNonNoiseSelectionBits : ["EnergySelection"]
+physics.producers.SimpleTimeCluster.minNStrawHits : 8
+
+physics.producers.CosmicShowerFilter.ComboHitCollection : makeSH
+physics.producers.CosmicShowerFilter.maxTotalSameGap : 6
+physics.producers.CosmicShowerFilter.maxCrossingGap : 8
+physics.producers.CosmicShowerFilter.maxSameGap : 3
+physics.producers.CosmicShowerFilter.maxNPanel : 36
+physics.producers.CosmicShowerFilter.cutSingleLayer : true
+
