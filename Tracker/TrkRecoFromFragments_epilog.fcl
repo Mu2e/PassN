@@ -9,7 +9,7 @@ physics.producers.makeSD: {
           missingDTCHeaders : false
           debugBits: []
           debugMode: 0
-          addressing: "byLink"
+          addressing: "byMnid"
           onMissingRow: "skip"
       }
 

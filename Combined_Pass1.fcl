@@ -57,9 +57,15 @@ outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
       "keep *_MSDHitMaker_*_*"
     ]
 
+# commissioning geometry
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_commissioning_v02.txt"
+
 ### CALO CONFIG ###
 #Real data
 physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+# for combined runs turn on calo in kkline
+physics.producers.KKLine.KKFitSettings.UseCaloCluster : true
+physics.producers.LineFinder.AddCaloClusters: true
 
 #No beam
 physics.producers.CaloRecoDigiMaker.UseProtonBunchTime : false
@@ -72,16 +78,14 @@ services.ProditionsService.calCalib.useDb : true
 physics.producers.CrvCoincidenceClusterFinder.ignoreSecondaryPulses : true  //ignore secondary pulses in a waveform
 services.ProditionsService.crvStatus.useDb : true
 services.ProditionsService.crvCalib.useDb  : true
+services.ProditionsService.eventTiming.useDb  : true
 
 # temporary calibrations
 #include "PassN/Tracker/trackercalibrations.fcl"
-services.DbService.purpose : "CRV_COMMISSIONING"
-services.DbService.version: v1_0
-services.DbService.textFile : [
-  "Offline/TrackerConditions/data/TrkPanelMap.txt",
-  "PassN/Tracker/trackercalibrations.txt",
-  "Offline/CaloConditions/data/EnergyCalib_example.txt",
-  "Offline/CaloConditions/data/TimeCalib_example.txt" ]
-# Commissioning: the temporary text-file calibrations (e.g. trackercalibrations.txt) cover a
-# single run, so fall back to the nearest earlier IOV for other runs, as in the CRV/Calo pass1
+
+# for now hard code KPP_reco purpose with most recent version
+services.DbService.purpose : "KPP_reco"
+services.DbService.version: ""
+# services.DbService.textFile : []
+# for now fall back to the nearest earlier IOV for runs without calibraitons
 services.DbService.nearestMatch : true

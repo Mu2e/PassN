@@ -17,8 +17,5 @@ physics.trigger_paths : [ RecoPath ]
 
 # temporary calibrations
 #include "PassN/Tracker/trackercalibrations.fcl"
-services.DbService.purpose : "TRACKER_VST"
-services.DbService.version: v2_0
-services.DbService.textFile : [
-  "Offline/TrackerConditions/data/TrkPanelMap.txt",
-  "PassN/Tracker/trackercalibrations.txt"]
+services.DbService.purpose : "KPP_reco"
+services.DbService.version: ""
