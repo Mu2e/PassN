@@ -57,8 +57,8 @@ outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
       "keep *_MSDHitMaker_*_*"
     ]
 
-# commissioning geometry
-services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_commissioning_v02.txt"
+# measured detector positions (geom_common_commissioning_v02.txt, renamed extracted v06 in Offline#2082)
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_extracted_v06.txt"
 
 ### CALO CONFIG ###
 #Real data
