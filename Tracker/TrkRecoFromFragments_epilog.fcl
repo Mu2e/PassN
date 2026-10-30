@@ -1,7 +1,3 @@
-physics.producers.EWMProducer: {
-          @table::CommonMC.DigiProducers.EWMProducer
-          SpillType: 0
-      }
 physics.producers.makeSD: {
           module_type: StrawDigisFromArtdaqFragments
           saveWaveforms : true
@@ -12,10 +8,6 @@ physics.producers.makeSD: {
           addressing: "byMnid"
           onMissingRow: "skip"
       }
-
-services.RandomNumberGenerator   : { defaultEngineKind: "MixMaxRng" }
-services.SeedService                    : @local::automaticSeeds
-services.SeedService.baseSeed : 8
 
 physics.RecoPath: [
   makeSD,
