@@ -56,7 +56,6 @@ outputs.KinematicLineOutput.outputCommands : [ "drop *_*_*_*",
       "drop mu2e::CrvDigis_*_NZS_*",
       "keep *_MSDHitMaker_*_*",
       # tracker pattern recognition, for the time cluster and line seed ntuple branches
-      "keep mu2e::ComboHitCollection_makeSH_*_*",
       "keep mu2e::TimeClusters_SimpleTimeCluster_*_*",
       "keep mu2e::TimeClusters_CosmicShowerFilter_*_*",
       "keep mu2e::CosmicTrackSeeds_LineFinder_*_*"
@@ -73,8 +72,10 @@ physics.producers.LineFinder.MaxLines : 3
 physics.producers.LineFinder.MaxWireDistPull : 3
 # Skip lines parallel to the planes (dz = 0): KKLine can't fit them. The shower filter removed the clusters that make them
 physics.producers.LineFinder.SkipFlatLines : true
-# Search all time clusters: CosmicShowerFilter rejects nearly every cluster with two tracks (a second layer crossing in
-# a panel is called a shower). It still runs, and its clusters are stored to show which ones it would have rejected
+# Search all time clusters: CosmicShowerFilter calls a cluster a shower when hits in one panel change layer twice. That
+# rejects nearly every cluster with two tracks, but also single tracks that cross 3 or more straws of a panel (e.g. a
+# cosmic nearly parallel to the planes), and most of the clusters this adds have one line. The filter still runs, and
+# its clusters are stored to show which ones it would have rejected
 physics.producers.LineFinder.TimeClusterCollection : "SimpleTimeCluster"
 
 ### CALO CONFIG ###

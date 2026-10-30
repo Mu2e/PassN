@@ -16,12 +16,11 @@ physics.analyzers.EventNtuple.helices.fill : false
 #physics.producers.MergeKKLine.KalSeedCollections: [ "RegrowKL" ]
 physics.analyzers.EventNtuple.mc.fill : false
 
-# Time clusters (with their hits), and the subset that passes CosmicShowerFilter (not used by the line finding)
+# Time clusters, and the subset that passes CosmicShowerFilter (not used by the line finding). No hit branches: the
+# makeSH combo hits they index are not kept in the pass 1 output
 physics.analyzers.EventNtuple.timeclusters.fill : true
 physics.analyzers.EventNtuple.timeclusters.tags  : [ "SimpleTimeCluster", "CosmicShowerFilter" ]
 physics.analyzers.EventNtuple.timeclusters.names  : [ "timeclusters", "showerfilteredtimeclusters" ]
-physics.analyzers.EventNtuple.timeclusters.comboHitTags : [ "makeSH" ]
-physics.analyzers.EventNtuple.timeclusters.fillHitsFor : [ "timeclusters" ]
 # Line seeds and their hits, for the events with more than one line per time cluster
 physics.analyzers.EventNtuple.lineseeds.fill : true
 physics.analyzers.EventNtuple.lineseeds.tags  : [ "LineFinder" ]
