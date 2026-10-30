@@ -1,4 +1,0 @@
-#include "PassN/TriggerAndDigisFromFragments.fcl"
-#include "Offline/CRVReco/fcl/epilog_extracted.fcl"
-#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_commissioning_v02.txt"
