@@ -1,4 +1,5 @@
 #include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/CRVDQM/fcl/prolog.fcl"
 #include "PassN/Tracker/TrkRecoFromFragments.fcl"
 
 physics.producers : {
@@ -30,11 +31,33 @@ physics.producers : {
   }
 physics.analyzers : {
     CrvDQMcollector: @local::CrvDQMcollector
+    # CRV DQM histograms (Mu2e/DQM modules, Offline/CRVDQM clients) of the CRVRecoPath products
+    crvDigiDQM : {
+      module_type   : DqmCrvDigi
+      configuration : "extracted"
+      digiTag       : "CrvDigi"
+      statusTag     : "CrvDigi"
+      dqm           : @local::CRVDQM.Digi
+    }
+    crvStatusDQM : {
+      module_type   : DqmCrvStatus
+      configuration : "extracted"
+      statusTag     : "CrvDigi"
+      daqErrorTag   : "CrvDigi"
+      dqm           : @local::CRVDQM.Status
+    }
+    crvRecoDQM : {
+      module_type   : DqmCrvReco
+      configuration : "extracted"
+      clusterTag    : "CrvCoincidenceClusterFinder"
+      pulseTag      : "CrvRecoPulses"
+      dqm           : @local::CRVDQM.Reco
+    }
   }
 physics.CaloRecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker ]
 physics.CRVRecoPath : [ CrvDigi, CrvRecoPulses, CrvCoincidenceClusterFinder ]
 physics.RecoPath : [ CaloDigis, CaloRecoDigiMaker, CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker, @sequence::physics.RecoPath ]
-physics.CRVEndPath : [ CrvDQMcollector ]
+physics.CRVEndPath : [ CrvDQMcollector, crvDigiDQM, crvStatusDQM, crvRecoDQM ]
 physics.MSDRecoPath : [ ProcessCFOData, MSDHitMaker ]
 physics.trigger_paths  : [RecoPath, CaloRecoPath, CRVRecoPath, MSDRecoPath]
 physics.end_paths : [CRVEndPath, EndPath]
