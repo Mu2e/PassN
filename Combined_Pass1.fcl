@@ -105,6 +105,7 @@ physics.producers.LineFinder.TimeClusterCollection : "SimpleTimeCluster"
 ### CALO CONFIG ###
 #Real data
 physics.producers.CaloRecoDigiMaker.caloDigiCollection : CaloDigis
+physics.producers.SelectReco.CaloDigiCollection : CaloDigis
 # for combined runs turn on calo in kkline
 physics.producers.KKLine.KKFitSettings.UseCaloCluster : true
 physics.producers.LineFinder.AddCaloClusters: true
