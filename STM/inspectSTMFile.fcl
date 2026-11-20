@@ -21,12 +21,12 @@ physics : {
          stmTag : "daq:ContainerSTM"
          verbosityLevel : 1
          saveSTMFragSummary : true
-         saveRawWithHeaderWaveform_HPGe: false
-         saveRawWaveform_HPGe: true
-         saveZSWaveform_HPGe: true
-         saveRawWithHeaderWaveform_LaBr: false
-         saveRawWaveform_LaBr: true
-         saveZSWaveform_LaBr: true
+         saveRawWaveformsWithHeaderHPGe: false
+         saveRawWaveformsHPGe: true
+         saveZSWaveformsHPGe: true
+         saveRawWaveformsWithHeaderLaBr: false
+         saveRawWaveformsLaBr: true
+         saveZSWaveformsLaBr: true
 	}
 
        makeSTMBinary : { 
